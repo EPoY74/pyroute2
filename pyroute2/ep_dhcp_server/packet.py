@@ -1,4 +1,6 @@
 import struct
+from dataclasses import dataclass
+from typing import Dict, Any
 
 
 # BOOTP fixed header: 236 bytes
@@ -6,6 +8,20 @@ BOOTp_FORMAT = "!BBBBIHHIIII16s64s128s"
 BOOTp_LEN = struct.calcsize(BOOTp_FORMAT)
 
 MAGIC_COOKIE = b"\x63\x82\x53\x63"
+
+
+@dataclass
+class DhcpMessage:
+    # BOOTP op: 1 = request, 2 = reply
+    op: int
+    # transaction ID
+    xid: int
+    # MAC клиента в виде "de:ad:be:ef:00:01"
+    chaddr: str
+    # 1=DISCOVER, 2=OFFER, 3=REQUEST, 5=ACK...
+    dhcp_message_type: int
+    # сырые опции (на будущее, пока можем туда же класть 53)
+    options: Dict[int, Any]
 
 
 def parse_bootp_header(data: bytes) -> dict:
@@ -62,7 +78,8 @@ def parse_dhcp_options(data: bytes) -> dict:
     """
 
     if len(data) < BOOTp_LEN + len(MAGIC_COOKIE):
-        raise ValueError("Packet too short to contain BOOTP header and magic cookie")
+        err = "Packet too short to contain BOOTP header and magic cookie"
+        raise ValueError(err)
 
     # 1. Проверяем magic cookie
     cookie = data[BOOTp_LEN:BOOTp_LEN + 4]
@@ -105,3 +122,12 @@ def parse_dhcp_options(data: bytes) -> dict:
         # Остальные опции сейчас игнорируем
 
     return options
+
+
+def parse_dhcp_message(data: bytes) -> DhcpMessage:
+    """
+    Высокоуровневый парсер DHCP:
+    комбинирует BOOTP-заголовок и DHCP-опции
+    в один объект DhcpMessage.
+    """
+    raise NotImplementedError("parse_dhcp_message is not implemented yet")
