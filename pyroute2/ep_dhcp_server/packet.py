@@ -50,3 +50,12 @@ def parse_bootp_header(data: bytes) -> dict:
         "chaddr": chaddr_str,
         # sname и file пока не используем, но при желании можно добавить
     }
+
+
+def parse_dhcp_options(data: bytes) -> dict:
+    """
+    Парсит DHCP-опции после BOOTP-заголовка.
+    Пока заглушка для TDD.
+    """
+
+    raise NotImplementedError("parse_dhcp_options is not implemented yet")
