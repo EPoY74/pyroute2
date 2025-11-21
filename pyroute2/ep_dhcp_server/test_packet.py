@@ -1,6 +1,6 @@
 import struct
 
-from .packet import parse_bootp_header
+from .packet import parse_bootp_header, parse_dhcp_options
 
 
 def make_dummy_discover() -> bytes:
@@ -57,3 +57,13 @@ def test_parse_bootp_basic():
 
     # MAC клиента в человекочитаемом виде
     assert header["chaddr"] == "de:ad:be:ef:00:01"
+
+
+def test_parse_dhcp_message_type():
+    payload = make_dummy_discover()
+    options = parse_dhcp_options(payload)
+
+    # В make_dummy_discover мы закладывали:
+    # опция 53, длина 1, значение 1 (DHCPDISCOVER)
+    # Проверяем значение, что это dhcp, то есть тип 1
+    assert options["dhcp_message_type "] == 1
