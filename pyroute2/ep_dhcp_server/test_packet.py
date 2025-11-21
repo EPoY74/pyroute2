@@ -1,6 +1,11 @@
 import struct
 
-from .packet import parse_bootp_header, parse_dhcp_options
+from .packet import (
+    parse_bootp_header,
+    parse_dhcp_options,
+    DhcpMessage,
+    parse_dhcp_message,
+)
 
 
 def make_dummy_discover() -> bytes:
@@ -67,3 +72,21 @@ def test_parse_dhcp_message_type():
     # опция 53, длина 1, значение 1 (DHCPDISCOVER)
     # Проверяем значение, что это dhcp, то есть тип 1
     assert options["dhcp_message_type"] == 1
+
+
+def test_parse_dhcp_message_combines_header_and_options():
+    payload = make_dummy_discover()
+
+    msg = parse_dhcp_message(payload)
+
+    # Проверяем, что это именно DhcpMessage
+    assert isinstance(msg, DhcpMessage)
+
+    # Поля из BOOTP-заголовка
+    assert msg.op == 1
+    assert msg.xid == 0x12345678
+    assert msg.chaddr == "de:ad:be:ef:00:01"
+
+    # Поле из DHCP-опций
+    assert msg.dhcp_message_type == 1  # DHCPDISCOVER
+
