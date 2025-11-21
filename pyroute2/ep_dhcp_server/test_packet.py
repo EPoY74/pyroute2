@@ -66,4 +66,4 @@ def test_parse_dhcp_message_type():
     # В make_dummy_discover мы закладывали:
     # опция 53, длина 1, значение 1 (DHCPDISCOVER)
     # Проверяем значение, что это dhcp, то есть тип 1
-    assert options["dhcp_message_type "] == 1
+    assert options["dhcp_message_type"] == 1
