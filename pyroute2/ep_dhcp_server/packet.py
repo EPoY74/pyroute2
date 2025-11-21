@@ -5,6 +5,8 @@ import struct
 BOOTp_FORMAT = "!BBBBIHHIIII16s64s128s"
 BOOTp_LEN = struct.calcsize(BOOTp_FORMAT)
 
+MAGIC_COOKIE = b"\x63\x82\x53\x63"
+
 
 def parse_bootp_header(data: bytes) -> dict:
     """
@@ -55,7 +57,51 @@ def parse_bootp_header(data: bytes) -> dict:
 def parse_dhcp_options(data: bytes) -> dict:
     """
     Парсит DHCP-опции после BOOTP-заголовка.
-    Пока заглушка для TDD.
+    Возвращает словарь с интересующими нас полями, например:
+    {"dhcp_message_type": 1}
     """
 
-    raise NotImplementedError("parse_dhcp_options is not implemented yet")
+    if len(data) < BOOTp_LEN + len(MAGIC_COOKIE):
+        raise ValueError("Packet too short to contain BOOTP header and magic cookie")
+
+    # 1. Проверяем magic cookie
+    cookie = data[BOOTp_LEN:BOOTp_LEN + 4]
+    if cookie != MAGIC_COOKIE:
+        raise ValueError(f"Invalid DHCP magic cookie: {cookie!r}")
+
+    # 2. Начинаем разбор опций после cookie
+    pos = BOOTp_LEN + 4
+    options: dict[str, object] = {}
+
+    while pos < len(data):
+        code = data[pos]
+        pos += 1
+
+        if code == 0:
+            # Padding, пропускаем
+            continue
+
+        if code == 255:
+            # End
+            break
+
+        if pos >= len(data):
+            err = "Unexpected end of packet while reading option length"
+            raise ValueError(err)
+
+        length = data[pos]
+        pos += 1
+
+        if pos + length > len(data):
+            raise ValueError("Option length goes beyond packet end")
+
+        value = data[pos:pos + length]
+        pos += length
+
+        # Нас пока интересует только опция 53 (DHCP Message Type)
+        if code == 53 and length == 1:
+            options["dhcp_message_type"] = value[0]
+
+        # Остальные опции сейчас игнорируем
+
+    return options
