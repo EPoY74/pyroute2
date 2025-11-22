@@ -1,7 +1,6 @@
 import struct
 from dataclasses import dataclass
-from typing import Dict, Any
-
+from typing import Any, Dict
 
 # BOOTP fixed header: 236 bytes
 BOOTp_FORMAT = "!BBBBIHHIIII16s64s128s"
@@ -82,7 +81,7 @@ def parse_dhcp_options(data: bytes) -> dict:
         raise ValueError(err)
 
     # 1. Проверяем magic cookie
-    cookie = data[BOOTp_LEN:BOOTp_LEN + 4]
+    cookie = data[BOOTp_LEN : BOOTp_LEN + 4]
     if cookie != MAGIC_COOKIE:
         raise ValueError(f"Invalid DHCP magic cookie: {cookie!r}")
 
@@ -112,7 +111,7 @@ def parse_dhcp_options(data: bytes) -> dict:
         if pos + length > len(data):
             raise ValueError("Option length goes beyond packet end")
 
-        value = data[pos:pos + length]
+        value = data[pos : pos + length]
         pos += length
 
         # Нас пока интересует только опция 53 (DHCP Message Type)
@@ -130,4 +129,17 @@ def parse_dhcp_message(data: bytes) -> DhcpMessage:
     комбинирует BOOTP-заголовок и DHCP-опции
     в один объект DhcpMessage.
     """
-    raise NotImplementedError("parse_dhcp_message is not implemented yet")
+    header = parse_bootp_header(data)
+    opts = parse_dhcp_options(data)
+
+    mt = opts.get("dhcp_message_type")
+    if mt is None:
+        raise ValueError("Missing DHCP message type (option 53)")
+
+    return DhcpMessage(
+        op=header["op"],
+        xid=header["xid"],
+        chaddr=header["chaddr"],
+        dhcp_message_type=int(mt),
+        options=opts,
+    )

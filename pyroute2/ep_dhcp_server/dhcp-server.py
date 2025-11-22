@@ -9,10 +9,9 @@ IFACE = 'eth0'
 def open_raw_socket(iface: str) -> socket.socket:
     """Open a raw socket on the specified interface."""
     # AF_PACKET — уровень Ethernet (L2), SOCK_RAW — сырые пакеты
-    sock = socket.socket(socket.AF_PACKET,
-                         socket.SOCK_RAW,
-                         socket.htons(ETH_P_IP)
-                         )
+    sock = socket.socket(
+        socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_IP)
+    )
     sock.bind((iface, 0))
     return sock
 

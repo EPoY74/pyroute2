@@ -1,10 +1,10 @@
 import struct
 
 from .packet import (
-    parse_bootp_header,
-    parse_dhcp_options,
     DhcpMessage,
+    parse_bootp_header,
     parse_dhcp_message,
+    parse_dhcp_options,
 )
 
 
@@ -27,24 +27,26 @@ def make_dummy_discover() -> bytes:
 
     bootp_fixed = struct.pack(
         "!BBBBIHHIIII16s64s128s",
-        BOOTREQUEST,     # op
+        BOOTREQUEST,  # op
         HTYPE_ETHERNET,  # htype
-        HLEN_ETHERNET,   # hlen
-        0,               # hops
-        xid,             # xid
-        0,               # secs
-        0,               # flags
-        0, 0, 0, 0,      # ciaddr, yiaddr, siaddr, giaddr
-        chaddr,          # chaddr (16 байт)
-        b"\x00" * 64,    # sname
-        b"\x00" * 128,   # file
+        HLEN_ETHERNET,  # hlen
+        0,  # hops
+        xid,  # xid
+        0,  # secs
+        0,  # flags
+        0,
+        0,
+        0,
+        0,  # ciaddr, yiaddr, siaddr, giaddr
+        chaddr,  # chaddr (16 байт)
+        b"\x00" * 64,  # sname
+        b"\x00" * 128,  # file
     )
 
     magic_cookie = b"\x63\x82\x53\x63"
-    options = magic_cookie + bytes([
-        53, 1, 1,  # Опция 53, длина 1, значение 1 (DISCOVER)
-        255,       # End
-    ])
+    options = magic_cookie + bytes(
+        [53, 1, 1, 255]  # Опция 53, длина 1, значение 1 (DISCOVER)  # End
+    )
 
     return bootp_fixed + options
 
@@ -89,4 +91,3 @@ def test_parse_dhcp_message_combines_header_and_options():
 
     # Поле из DHCP-опций
     assert msg.dhcp_message_type == 1  # DHCPDISCOVER
-
