@@ -1,6 +1,11 @@
 Changelog
 =========
 
+* 0.9.5
+    * async: AsyncIPSet, AsyncIPVS, AsyncWiSet
+    * ndb: fix snapshot cleanup <https://github.com/svinota/pyroute2/issues/1364>
+    * wirouting: initial version <https://github.com/svinota/pyroute2/pull/1411>
+    * process: use poll instead of select <https://github.com/svinota/pyroute2/pull/1431>
 * 0.9.4
     * iwutil: fix get_interfaces_dict <https://github.com/svinota/pyroute2/issues/1380>
 * 0.9.3
@@ -149,7 +154,7 @@ Changelog
 * 0.6.10
     * ndb: fix DB reload on incomplete requests in the IPRoute API fallbacks: <https://github.com/svinota/pyroute2/issues/890>
     * ndb: basic ipvlan support
-    * ndb: support `ndb.schema.backup("filename")` fro SQLite3 backend
+    * ndb: support `ndb.schema.backup("filename")` for SQLite3 backend
     * ndb: transactions, CheckProcess, PingAddress, see `test_ndb/test_transaction.py` and docs
     * ndb: make snapshots only for `commit()` calls, no automatic snapshots for `apply()`
     * netlink: filter out all the subsequent messages starting from the first error: <https://github.com/svinota/pyroute2/issues/892>

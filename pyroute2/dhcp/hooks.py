@@ -19,11 +19,12 @@ class Trigger(StrEnum):
 
     # The client has obtained a new lease
     BOUND = auto()
-    # The client has voluntarily relinquished its lease
+    # The client has voluntarily relinquished its lease,
+    # or its current lease has been invalidated by a NAK
     UNBOUND = auto()
     # The client has renewed its lease after the renewal timer expired
     RENEWED = auto()
-    # The client has rebound its leas after the rebinding timer expired
+    # The client has rebound its lease after the rebinding timer expired
     REBOUND = auto()
     # The lease has expired (the client will restart the lease process)
     EXPIRED = auto()

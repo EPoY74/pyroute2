@@ -1,4 +1,3 @@
-import errno
 import socket
 from time import sleep
 from uuid import uuid4
@@ -6,7 +5,14 @@ from uuid import uuid4
 import pytest
 from pr2test.marks import require_root
 
-from pyroute2.ipset import IPSet, IPSetError, PortEntry, PortRange
+from pyroute2.ipset import (
+    AlreadyExists,
+    IPSet,
+    IPSetError,
+    NoSuchObject,
+    PortEntry,
+    PortRange,
+)
 from pyroute2.netlink.exceptions import NetlinkError
 from pyroute2.netlink.nfnetlink.ipset import (
     IPSET_ERR_TYPE_SPECIFIC,
@@ -76,20 +82,15 @@ def ipset_exists(ipset_name):
         try:
             tuple(sock.headers(ipset_name))
             return True
-        except IPSetError as e:
-            if e.code == errno.ENOENT:
-                return False
-            raise
+        except NoSuchObject:
+            return False
 
 
 def test_create_exclusive_fail(ipset, ipset_name):
     ipset.create(ipset_name)
     assert ipset_exists(ipset_name)
-    try:
+    with pytest.raises(AlreadyExists):
         ipset.create(ipset_name)
-    except NetlinkError as e:
-        if e.code != errno.EEXIST:
-            raise
 
 
 def test_create_exclusive_success(ipset, ipset_name):
@@ -445,3 +446,14 @@ def test_set_by(ipset, ipset_name):
     # restore version back to original
     ipset._proto_version = old_vers
     assert ipset_name == name_found
+
+
+def test_exception_msg(ipset, ipset_name):
+    """Test that we receive exception with friendly error message"""
+    ipset.create(ipset_name, "hash:ip")
+    ipset.add(ipset_name, "192.0.2.1")
+    with pytest.raises(IPSetError) as excinfo:
+        ipset.add(ipset_name, "192.0.2.1")
+    assert "Element cannot be added to the set: it's already added" in str(
+        excinfo.value
+    )

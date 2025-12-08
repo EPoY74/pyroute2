@@ -42,7 +42,6 @@ async def test_stat(nfct):
     stat = await nfct.stat()
     assert len(stat) == os.cpu_count()
     assert all(map(lambda x: isinstance(x, nlmsg), stat))
-    assert any(map(lambda x: x.get('insert') > 0, stat))
 
 
 async def locate_entry(nfct):

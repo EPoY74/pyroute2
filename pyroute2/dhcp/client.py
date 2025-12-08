@@ -313,7 +313,7 @@ class AsyncDHCPClient:
         await self._run_hooks(Trigger.EXPIRED)
         await self.reset()
 
-    # DHCP packet sending & receving coroutines
+    # DHCP packet sending & receiving coroutines
 
     async def _send_message(self, msg: messages.SentDHCPMessage) -> None:
         '''Set secs, xid & client id on the message, and send it.'''
@@ -394,7 +394,7 @@ class AsyncDHCPClient:
                     await self._send_message(msg_to_send)
                 except OSError as err:
                     # That happens when the interface goes down.
-                    # In theses cases, the client is supposed to be restarted
+                    # In these cases, the client is supposed to be restarted
                     if err.errno == errno.ENETDOWN:
                         LOG.error('Could not send, network is down')
                         return
@@ -421,7 +421,7 @@ class AsyncDHCPClient:
                     received_msg = wait_for_received_msg.result()
                 except OSError as err:
                     # That happens when the interface goes down.
-                    # In theses cases, the client is supposed to be restarted
+                    # In these cases, the client is supposed to be restarted
                     if err.errno == errno.ENETDOWN:
                         LOG.error('Could not recv, network is down')
                         return
@@ -493,6 +493,11 @@ class AsyncDHCPClient:
 
         Resets the client and starts looking for a new IP.
         '''
+        # If we get a NAK when rebooting, renewing, or rebinding,
+        # that means we have an active lease which is not valid anymore.
+        # In these cases, we have to run the UNBOUND trigger
+        if msg.xid.request_state != fsm.State.REQUESTING:
+            await self._run_hooks(trigger=Trigger.UNBOUND)
         await self.reset()
 
     @fsm.state_guard(fsm.State.SELECTING)
